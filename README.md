@@ -13,17 +13,22 @@ npm install ng-ax-path --save
 ## 2. component typescript - app.component.ts
 
 import { Component, OnInit } from '@angular/core';
+
 import { Coordinate, Axis, Path, Point } from 'ng-ax-path';
+
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
+
 export class AppComponent implements OnInit {
+
   coordinate: Coordinate;
 
   ngOnInit() {
+  
     this.coordinate = new Coordinate({width: 600, height: 400});
 
     this.coordinate.xAxis = new Axis({name: 'Age', unit: 'year'}, 3);
