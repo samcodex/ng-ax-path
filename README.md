@@ -5,7 +5,7 @@ Angular 4 base coordinate component.
 npm install ng-ax-path --save
 
 
-# Usage:
+# Usage
 
 ## 1. component html - app.component.html
 <ng-ax-path [coordinate]="coordinate"></ng-ax-path>
