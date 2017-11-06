@@ -1,0 +1,28 @@
+{
+  "name": "ng-ax-path",
+  "version": "0.0.1",
+  "description": "Coordination module for Angular.",
+  "main": "bundles/ngaxpath.umd.js",
+  "module": "index.js",
+  "typings": "index.d.ts",
+  "keywords": [
+    "angular",
+    "angular2",
+    "angular 2",
+    "angular4"
+  ],
+  "author": "Samuel",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samcodex/ng-ax-path.git"
+  },
+  "homepage": "https://github.com/samcodex/ng-ax-path",
+  "bugs": {
+    "url": "https://github.com/samcodex/ng-ax-path/issues"
+  },
+  "peerDependencies": {
+    "@angular/core": "^2.4.0 || ^4.0.0",
+    "rxjs": "^5.0.1"
+  }
+}

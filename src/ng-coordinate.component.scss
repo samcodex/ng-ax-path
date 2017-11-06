@@ -1,0 +1,16 @@
+#svg-weight-size {
+  width: 340px;
+  height: 224px;
+  border: 1px solid grey;
+
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+
+  .axis text {
+    font: 10px sans-serif;
+  }
+}
