@@ -1,12 +1,16 @@
-#ng-ax-path
+# ng-ax-path
 Angular 4 base coordinate component.
 
-Usage:
+# Installtion
+npm install ng-ax-path --save
 
-1. component html - app.component.html
+
+# Usage:
+
+## 1. component html - app.component.html
 <ng-ax-path [coordinate]="coordinate"></ng-ax-path>
 
-2. component typescript - app.component.ts
+## 2. component typescript - app.component.ts
 
 import { Component, OnInit } from '@angular/core';
 import { Coordinate, Axis, Path, Point } from 'ng-ax-path';
