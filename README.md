@@ -4,7 +4,6 @@ Angular 4 base coordinate component.
 # Installtion
 npm install ng-ax-path --save
 
-
 # Usage
 
 ## 1. component html - app.component.html
@@ -47,3 +46,7 @@ export class AppComponent implements OnInit {
     this.coordinate.addPath(path3);
   }
 }
+
+# References
+d3
+cspl - https://github.com/kuckir/CSPL.js
