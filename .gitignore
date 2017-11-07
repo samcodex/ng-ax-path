@@ -18,7 +18,10 @@ npm-debug.log*
 .tmp/
 .versions/
 coverage/
-dist/
+dist/*
+!dist/package.json
+!dist/LICENSE.md
+!dist/README.md
 node_modules/
 aot/
 tmp/
