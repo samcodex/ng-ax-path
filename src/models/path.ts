@@ -22,7 +22,7 @@ export class Path extends SvgElement {
   appendTo(host: d3.Selection<d3.BaseType, {}, Element, {}>): SvgElement {
     const d = this._buildSvgPath();
 
-    host.append('path')
+    this.group = host.append('path')
       .attr('class', 'line')
       .style('stroke', '#000')
       .style('fill', 'transparent')
@@ -30,7 +30,6 @@ export class Path extends SvgElement {
       .attr('d', d);
 
     return this;
-
   }
 
   private _buildSvgPath() {

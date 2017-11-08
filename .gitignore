@@ -22,6 +22,7 @@ dist/*
 !dist/package.json
 !dist/LICENSE.md
 !dist/README.md
+!dist/.npmignore
 node_modules/
 aot/
 tmp/

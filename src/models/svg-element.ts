@@ -27,6 +27,12 @@ export abstract class SvgElement {
   }
 
   abstract appendTo(host: d3.Selection<d3.BaseType, {}, Element, {}>): SvgElement;
+
+  remove() {
+    if (this.group) {
+      this.group.remove();
+    }
+  }
 }
 
 export type PositionSize = {

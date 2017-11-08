@@ -1,9 +1,8 @@
 import * as d3 from 'd3';
 import { CSPL } from './cspl';
 import { Axis, AXIS_TYPE} from './axis';
-import { Path } from './path';
+import { Path, Point } from './path';
 import { SvgElement, PositionSize, RectangleSize } from './svg-element';
-
 
 const DEFAULT_MARGIN: PositionSize = {top: 5, left: 30, right: 15, bottom: 20};
 
@@ -16,6 +15,7 @@ export class Coordinate extends SvgElement {
   private paths: Path[] = new Array<Path>();
   private _xAxis: Axis;
   private _yAxis: Axis;
+  private host: d3.Selection<d3.BaseType, {}, Element, {}> | null = null;
 
   constructor(
     fullSize: RectangleSize,
@@ -59,7 +59,37 @@ export class Coordinate extends SvgElement {
     }
   }
 
-  addPath(path: Path): Coordinate {
+  /**
+   * @public
+   * @param {(Path | Point[] | [number, number][])} data
+   * @returns {Coordinate}
+   * @memberof Coordinate
+   * @see Path, Point
+   */
+  addPath(data: Path | Point[] | [number, number][] ): Coordinate {
+    // Observable<Response> | Observable<[number, number][]>
+    if (data instanceof Path) {
+      return this.addPathFromPath(data);
+    } else if (data instanceof Array && data.length > 0 ) {
+      if (data[0] instanceof Point) {
+        return this.addPathFromPoints(<Point[]>data);
+      } else if (data[0] instanceof Array) {
+        return this.addPathFromArray(<[number, number][]>data);
+      }
+    }
+
+    return this;
+  }
+
+  addPathFromArray(data: [number, number][]): Coordinate {
+    return this.addPathFromPoints(data.map(d=>new Point( d[0], d[1] )));
+  }
+
+  addPathFromPoints(points: Point[]): Coordinate {
+    return this.addPathFromPath(new Path(points));
+  }
+
+  addPathFromPath(path: Path): Coordinate {
     this.paths.push(path);
     this.addChild(path);
 
@@ -78,14 +108,24 @@ export class Coordinate extends SvgElement {
   }
 
   appendTo(host: d3.Selection<d3.BaseType, {}, Element, {}>): SvgElement {
-    this.group = host.append('svg')
-      .attr('width', this.fullSize.width)
-      .attr('height', this.fullSize.height)
-      .append('g')
-      .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
+    this.host = host;
 
+    this.group = this.host.append('svg')
+    .attr('width', this.fullSize.width)
+    .attr('height', this.fullSize.height)
+    .append('g')
+    .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
 
     this.children.forEach(p => p.appendTo(this.group));
+
+    return this;
+  }
+
+  redrawPath(): SvgElement {
+    this.children.forEach(p => {
+      p.remove();
+      p.appendTo(this.group);
+    });
 
     return this;
   }

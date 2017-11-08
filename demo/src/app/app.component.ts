@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Coordinate, Axis, Path, Point } from 'ng-ax-path';
+import { Coordinate, Axis, Path, Point } from './../../../src/models';
 
 @Component({
   selector: 'app-root',
