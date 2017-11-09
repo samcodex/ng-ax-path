@@ -1,6 +1,6 @@
 {
   "name": "ng-ax-path",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Coordination module for Angular.",
   "main": "bundles/ngaxpath.umd.js",
   "module": "src/index.js",
@@ -10,7 +10,7 @@
     "angular2",
     "angular 2",
     "angular4",
-	"d3"
+    "d3"
   ],
   "author": "Samuel",
   "license": "MIT",
@@ -24,7 +24,7 @@
   },
   "peerDependencies": {
     "@angular/core": "^2.4.0 || ^4.4.3",
-	"d3": "^4.11.0",
-	"@types/d3": "^4.11.0"
+    "d3": "^4.11.0",
+    "@types/d3": "^4.11.0"
   }
 }
