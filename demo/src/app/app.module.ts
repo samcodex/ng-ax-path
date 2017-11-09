@@ -1,7 +1,8 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { HttpModule } from '@angular/http';
 
-import { NgCoordinateModule } from './../../../src/ng-coordinate.module';
+import { NgCoordinateModule } from 'ng-ax-path';
 import { AppComponent } from './app.component';
 
 @NgModule({
@@ -9,6 +10,7 @@ import { AppComponent } from './app.component';
     AppComponent
   ],
   imports: [
+    HttpModule,
     BrowserModule,
     NgCoordinateModule
   ],
