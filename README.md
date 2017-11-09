@@ -5,15 +5,17 @@
 ng-ax-path creates a curved line chart with two dimensions base on the passing individual data points. 
 Compatible with __Ionic 2__, __Angular2__ and __Angular4__ versions.
 
+![Screenshot](https://github.com/samcodex/ng-ax-path/blob/master/assets/line_chart.png)
+
 ## Installtion
 npm install ng-ax-path --save
 
-# Usage
+## Usage
 
-## 1. add ng-ax-path component into html template - app.component.html
+1. add ng-ax-path component into html template - app.component.html
 <ng-ax-path [coordinate]="coordinate"></ng-ax-path>
 
-## 2. set ng-ax-path data in component class - app.component.ts
+2. set ng-ax-path data in component class - app.component.ts
 ```ts
 import { Component, OnInit } from '@angular/core';
 import { Coordinate, Axis, Path, Point } from './../ng-ax-path/models';
@@ -61,6 +63,9 @@ export class AppComponent implements OnInit {
 }
 ```
 
-## Built With
+# Built With
 - d3
 - [cspl](https://github.com/kuckir/CSPL.js).
+
+# Authors
+[Samuel Xie](mailto:xie.samuel@gmail.com)
