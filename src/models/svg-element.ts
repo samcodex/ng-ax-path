@@ -4,9 +4,12 @@ export abstract class SvgElement {
   protected parent: SvgElement;
   protected children: SvgElement[] = new Array<SvgElement>();
   protected attrs: {[key: string]: any} = {};
+  protected styles: {[key: string]: any} = {};
   protected group: d3.Selection<d3.BaseType, {}, Element, {}>;
 
-  constructor() {}
+  constructor(
+    public name?: string
+  ) {}
 
   attr(name: string, value: any) {
     this.attrs[name] = value;
@@ -15,6 +18,15 @@ export abstract class SvgElement {
 
   delAttr(name: string) {
     delete this.attrs[name];
+  }
+
+  style(name: string, value: any) {
+    this.styles[name] = value;
+    return this;
+  }
+
+  delStyle(name: string) {
+    delete this.styles[name];
   }
 
   protected addChild(child: SvgElement): SvgElement {
@@ -27,6 +39,13 @@ export abstract class SvgElement {
   }
 
   abstract appendTo(host: d3.Selection<d3.BaseType, {}, Element, {}>): SvgElement;
+
+  applyStyle() {
+    if (this.group) {
+      Object.keys(this.styles).forEach(k => this.group.style(k, this.styles[k]));
+      Object.keys(this.attrs).forEach(k => this.group.attr(k, this.attrs[k]));
+    }
+  }
 
   remove() {
     if (this.group) {

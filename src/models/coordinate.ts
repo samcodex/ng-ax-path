@@ -8,24 +8,22 @@ const DEFAULT_MARGIN: PositionSize = {top: 5, left: 30, right: 15, bottom: 20};
 
 export class Coordinate extends SvgElement {
 
-  margin: PositionSize;
-  fullSize: RectangleSize;
   size: RectangleSize = {width: 0, height: 0};
-
   private paths: Path[] = new Array<Path>();
   private _xAxis: Axis;
   private _yAxis: Axis;
+
   private host: d3.Selection<d3.BaseType, {}, Element, {}> | null = null;
 
   constructor(
-    fullSize: RectangleSize,
-    margin: PositionSize = DEFAULT_MARGIN,
+    name: string,
+    private fullSize: RectangleSize,
+    private margin: PositionSize = DEFAULT_MARGIN,
     xAxis?: Axis,
     yAxis?: Axis
   ) {
-    super();
+    super(name);
 
-    this.fullSize = fullSize;
     this.margin = margin;
     this.size.width = (this.fullSize.width) - this.margin.left - this.margin.right;
     this.size.height = (this.fullSize.height) - this.margin.top - this.margin.bottom;
@@ -62,41 +60,41 @@ export class Coordinate extends SvgElement {
   /**
    * @public
    * @param {(Path | Point[] | [number, number][])} data
-   * @returns {Coordinate}
+   * @returns {Path | null}
    * @memberof Coordinate
    * @see Path, Point
    */
-  addPath(data: Path | Point[] | [number, number][] ): Coordinate {
+  addPath(data: Path | Point[] | [number, number][], name?: string): Path | null {
     // Observable<Response> | Observable<[number, number][]>
     if (data instanceof Path) {
       return this.addPathFromPath(data);
     } else if (data instanceof Array && data.length > 0 ) {
       if (data[0] instanceof Point) {
-        return this.addPathFromPoints(<Point[]>data);
+        return this.addPathFromPoints(<Point[]>data, name);
       } else if (data[0] instanceof Array) {
-        return this.addPathFromArray(<[number, number][]>data);
+        return this.addPathFromArray(<[number, number][]>data, name);
       }
     }
 
-    return this;
+    return null;
   }
 
-  addPathFromArray(data: [number, number][]): Coordinate {
-    return this.addPathFromPoints(data.map(d=>new Point( d[0], d[1] )));
+  addPathFromArray(data: [number, number][], name?: string): Path {
+    return this.addPathFromPoints(data.map(d=>new Point(d[0], d[1] )), name);
   }
 
-  addPathFromPoints(points: Point[]): Coordinate {
-    return this.addPathFromPath(new Path(points));
+  addPathFromPoints(points: Point[], name?: string): Path {
+    return this.addPathFromPath(new Path(points, name));
   }
 
-  addPathFromPath(path: Path): Coordinate {
+  addPathFromPath(path: Path): Path {
     this.paths.push(path);
     this.addChild(path);
 
     this._xAxis.adjustDomain(path);
     this._yAxis.adjustDomain(path);
 
-    return this;
+    return path;
   }
 
   xScale(value: number): number {

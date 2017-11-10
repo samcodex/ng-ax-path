@@ -8,19 +8,10 @@ export enum AXIS_TYPE {
   Y = 'y'
 }
 
-export type AxisOptions = {
-  name?: string,
-  title?: string,
-  unit?: string
-};
-
 export class Axis extends SvgElement {
   type: AXIS_TYPE;
-  name: string;
   title: string;
-  unit: string;
 
-  domain: [number, number];
   range: [number, number];
   tickValues: number[];
   yAxisExtra: number;
@@ -31,20 +22,16 @@ export class Axis extends SvgElement {
   parent: Coordinate;
 
   constructor(
-    options: AxisOptions,
+    name: string,
+    private unit: string,
     public tickInterval?: number,
-    domain: [number, number] = [0, 0]
+    private domain: [number, number] = [0, 0]
   ) {
-    super();
+    super(name);
 
-    this.name = options.name || '';
-    this.title = options.title || '';
-    this.unit = options.unit || '';
     if (!this.title) {
-      this.title = `${this.name} (${this.unit})`;
+      this.title = `${name} (${unit})`;
     }
-
-    this.domain = domain || [0, 0];
 
     this._adjustData();
   }
@@ -100,40 +87,40 @@ export class Axis extends SvgElement {
       this.axis.tickValues(this.tickValues);
     }
 
-    this.group = host.append("g").attr("class", "axis axis--" + this.type);
+    this.group = host.append('g').attr('class', 'axis axis--' + this.type);
     this.group.call(this.axis);
 
     if (this.type === AXIS_TYPE.X) {
       this.group
-        .attr("transform", "translate(0," + this.parent.size.height + ")")
-        .append("text")
-          .attr("x", this.parent.size.width)
-          .attr("y", -3)
-          .attr("dy", "-.35em")
-          .attr("fill", "#000")
-          .style("text-anchor", "end")
+        .attr('transform', 'translate(0,' + this.parent.size.height + ')')
+        .append('text')
+          .attr('x', this.parent.size.width)
+          .attr('y', -3)
+          .attr('dy', '-.35em')
+          .attr('fill', '#000')
+          .style('text-anchor', 'end')
           .text(this.title);
 
-      this.group.selectAll(".tick:not(:first-of-type)")
-        .append("line")
-        .attr("y2", -this.parent.size.height)
-        .attr("stroke", "#777")
-        .attr("stroke-dasharray", "2,2");
+      this.group.selectAll('.tick:not(:first-of-type)')
+        .append('line')
+        .attr('y2', -this.parent.size.height)
+        .attr('stroke', '#777')
+        .attr('stroke-dasharray', '2,2');
 
     } else {
       this.group
-        .append("text")
-        .attr("dx", 8)
-        .attr("dy", ".8em")
-        .attr("fill", "#000")
-        .style("text-anchor", "start")
+        .append('text')
+        .attr('dx', 8)
+        .attr('dy', '.8em')
+        .attr('fill', '#000')
+        .style('text-anchor', 'start')
         .text(this.title);
 
-      this.group.selectAll(".tick:not(:first-of-type)")
-        .append("line")
-        .attr("x2", this.parent.size.width)
-        .attr("stroke", "#777")
-        .attr("stroke-dasharray", "2,2");
+      this.group.selectAll('.tick:not(:first-of-type)')
+        .append('line')
+        .attr('x2', this.parent.size.width)
+        .attr('stroke', '#777')
+        .attr('stroke-dasharray', '2,2');
     }
 
     return this;

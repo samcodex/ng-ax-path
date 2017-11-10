@@ -8,10 +8,12 @@ export class Path extends SvgElement {
   axisStep = 1;
 
   constructor(
-    public points: Point[]
+    public points: Point[],
+    public name?: string
   ) {
-    super();
+    super(name);
 
+    this.setDefaultStyle();
     this.sort();
   }
 
@@ -19,15 +21,23 @@ export class Path extends SvgElement {
     this.points.sort((a, b) => a.x - b.x);
   }
 
-  appendTo(host: d3.Selection<d3.BaseType, {}, Element, {}>): SvgElement {
-    const d = this._buildSvgPath();
+  set color(color: string) {
+    this.style('stroke', color);
+  }
 
-    this.group = host.append('path')
-      .attr('class', 'line')
+  private setDefaultStyle() {
+    this.attr('class', 'line')
       .style('stroke', '#000')
       .style('fill', 'transparent')
-      .style('stroke-width', '1.5px')
-      .attr('d', d);
+      .style('stroke-width', '1.5px');
+  }
+
+  appendTo(host: d3.Selection<d3.BaseType, {}, Element, {}>): SvgElement {
+    this.group = host.append('path');
+    this.applyStyle();
+
+    const d = this._buildSvgPath();
+    this.group.attr('d', d);
 
     return this;
   }
