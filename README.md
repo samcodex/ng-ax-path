@@ -5,7 +5,12 @@
 ng-ax-path creates a curved line chart with two dimensions base on the passing individual data points. 
 Compatible with __Ionic 2__, __Angular2__ and __Angular4__ versions.
 
-![Screenshot](https://github.com/samcodex/ng-ax-path/blob/master/assets/line_chart.png)
+<img src="https://github.com/samcodex/ng-ax-path/blob/master/assets/chart_legend_in_block.png" alt="Legend_In_Block" width="500px"/>
+Display legend inside the chart
+<img src="https://github.com/samcodex/ng-ax-path/blob/master/assets/chart_legend_out_block.png" alt="Legend_Out_Block" width="500px"/>
+Display legend outside the chart
+<img src="https://github.com/samcodex/ng-ax-path/blob/master/assets/chart_title_legend_out_center.png" alt="Legend_Out_Center" width="500px"/>
+Display legend on top of the chart
 
 ## Installation
 npm install ng-ax-path --save
