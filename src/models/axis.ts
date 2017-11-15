@@ -1,7 +1,8 @@
 import * as d3 from 'd3';
 import { Coordinate } from './coordinate';
-import { SvgElement } from './svg-element';
+import { SvgElement, Rect } from './svg-element';
 import { Path } from './path';
+import { d3_util } from './d3.util';
 
 export enum AXIS_TYPE {
   X = 'x',
@@ -14,7 +15,7 @@ export class Axis extends SvgElement {
 
   range: [number, number];
   tickValues: number[];
-  yAxisExtra: number;
+  extraSpace = 0;
 
   scale: d3.ScaleLinear<number, number>;
   axis: d3.Axis<number | {valueOf(): number}>;
@@ -61,8 +62,14 @@ export class Axis extends SvgElement {
 
   adjustDomain(path: Path) {
     const last = path.points.length - 1;
-    const min = this.type === AXIS_TYPE.X ? path.points[0].x : path.points[0].y;
-    let max = this.type === AXIS_TYPE.X ? path.points[last].x : (path.points[last].y + this.yAxisExtra || 0);
+    let min, max;
+    if (this.type === AXIS_TYPE.X) {
+      min = path.points[0].x;
+      max = path.points[last].x + this.extraSpace;
+    } else {
+      min = path.points[0].y;
+      max = path.points[last].y + this.extraSpace;
+    }
     max = Math.floor(max + 0.5);
 
     this.domain[0] = Math.min(this.domain[0], min);
@@ -71,8 +78,7 @@ export class Axis extends SvgElement {
     this._adjustData();
   }
 
-  appendTo(host: d3.Selection<d3.BaseType, {}, Element, {}>): SvgElement {
-
+  buildGroup() {
     this.scale = d3.scaleLinear()
       .domain(this.domain)
       .range(this.range);
@@ -87,14 +93,14 @@ export class Axis extends SvgElement {
       this.axis.tickValues(this.tickValues);
     }
 
-    this.group = host.append('g').attr('class', 'axis axis--' + this.type);
-    this.group.call(this.axis);
+    this.group.attr('class', 'axis axis--' + this.type)
+      .call(this.axis);
 
     if (this.type === AXIS_TYPE.X) {
       this.group
-        .attr('transform', 'translate(0,' + this.parent.size.height + ')')
+        .attr('transform', 'translate(0,' + this.parent.$size.height + ')')
         .append('text')
-          .attr('x', this.parent.size.width)
+          .attr('x', Rect.width(this.parent.$size))
           .attr('y', -3)
           .attr('dy', '-.35em')
           .attr('fill', '#000')
@@ -103,7 +109,7 @@ export class Axis extends SvgElement {
 
       this.group.selectAll('.tick:not(:first-of-type)')
         .append('line')
-        .attr('y2', -this.parent.size.height)
+        .attr('y2', -Rect.height(this.parent.$size))
         .attr('stroke', '#777')
         .attr('stroke-dasharray', '2,2');
 
@@ -118,11 +124,13 @@ export class Axis extends SvgElement {
 
       this.group.selectAll('.tick:not(:first-of-type)')
         .append('line')
-        .attr('x2', this.parent.size.width)
+        .attr('x2', Rect.width(this.parent.$size))
         .attr('stroke', '#777')
         .attr('stroke-dasharray', '2,2');
     }
+  }
 
-    return this;
+  getSize(): ClientRect {
+    return d3_util.getRect(this.group);
   }
 }

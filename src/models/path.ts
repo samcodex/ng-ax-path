@@ -2,6 +2,7 @@ import * as d3 from 'd3';
 import { CSPL } from './cspl';
 import { Coordinate } from './coordinate';
 import { SvgElement } from './svg-element';
+import { d3_util } from './d3.util';
 
 export class Path extends SvgElement {
   parent: Coordinate;
@@ -9,7 +10,7 @@ export class Path extends SvgElement {
 
   constructor(
     public points: Point[],
-    public name?: string
+    public name: string = ''
   ) {
     super(name);
 
@@ -22,29 +23,40 @@ export class Path extends SvgElement {
   }
 
   set color(color: string) {
-    this.style('stroke', color);
+    this.setStyle('stroke', color);
+  }
+
+  get color(): string {
+    return this.getStyle('stroke');
   }
 
   private setDefaultStyle() {
-    this.attr('class', 'line')
-      .style('stroke', '#000')
-      .style('fill', 'transparent')
-      .style('stroke-width', '1.5px');
+    this.setAttr('class', 'line')
+      .setStyle('stroke', '#000')
+      .setAttr('fill', 'transparent')
+      .setAttr('stroke-width', '1.5px');
   }
 
-  appendTo(host: d3.Selection<d3.BaseType, {}, Element, {}>): SvgElement {
-    this.group = host.append('path');
+  buildGroup() {
     this.applyStyle();
-
     const d = this._buildSvgPath();
-    this.group.attr('d', d);
 
-    return this;
+    this.group.append('path').attr('d', d);
+    this.points.forEach((p) => this.buildPoint(p, this.color));
+  }
+
+  private buildPoint(p: Point, color: string) {
+    this.group.append('circle')
+      .attr('cx', this.parent.xScale(p.x))
+      .attr('cy', this.parent.yScale(p.y))
+      .attr('r', 2)
+      .attr('fill', color)
+      .attr('stroke', 'transparent');
   }
 
   private _buildSvgPath() {
     let path;
-    const step = 2/this.parent.xScale(this.axisStep);
+    const step = 2 / this.parent.xScale(this.axisStep);
     const points: Point[] = this.points;
     const xs: number[] = [],
       ys: number[] = [],
@@ -61,16 +73,16 @@ export class Path extends SvgElement {
     const minx = points[0].x;
     const maxx = points[points.length - 1].x;
 
-    path = 'M' + this._toXY(minx, CSPL.evalSpline(minx, xs, ys, ks));
+    path = 'M' + this._toXY(minx, CSPL.evalSpline(minx, xs, ys, ks)).join(',');
     for (let i = minx + step; i <= maxx; i += step) {
-      path += (' ' + this._toXY(i, CSPL.evalSpline(i, xs, ys, ks)));
+      path += (' ' + this._toXY(i, CSPL.evalSpline(i, xs, ys, ks)).join(','));
     }
 
     return path;
   }
 
-  private _toXY(x: number, y: number) {
-    return this.parent.xScale(x) + ',' + this.parent.yScale(y);
+  private _toXY(x: number, y: number): [number, number] {
+    return [this.parent.xScale(x), this.parent.yScale(y)];
   }
 }
 

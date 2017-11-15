@@ -1,17 +1,20 @@
 import * as d3 from 'd3';
+import { d3_util } from './d3.util';
 
 export abstract class SvgElement {
   protected parent: SvgElement;
   protected children: SvgElement[] = new Array<SvgElement>();
   protected attrs: {[key: string]: any} = {};
   protected styles: {[key: string]: any} = {};
-  protected group: d3.Selection<d3.BaseType, {}, Element, {}>;
+  public group: d3.Selection<d3.BaseType, {}, null, undefined>;
 
   constructor(
-    public name?: string
-  ) {}
+    public name: string = ''
+  ) {
+    this.group = d3_util.createGroup();
+  }
 
-  attr(name: string, value: any) {
+  setAttr(name: string, value: any) {
     this.attrs[name] = value;
     return this;
   }
@@ -20,9 +23,13 @@ export abstract class SvgElement {
     delete this.attrs[name];
   }
 
-  style(name: string, value: any) {
+  setStyle(name: string, value: any) {
     this.styles[name] = value;
     return this;
+  }
+
+  getStyle(name: string): any {
+    return this.styles[name];
   }
 
   delStyle(name: string) {
@@ -38,30 +45,37 @@ export abstract class SvgElement {
     return this;
   }
 
-  abstract appendTo(host: d3.Selection<d3.BaseType, {}, Element, {}>): SvgElement;
+  abstract buildGroup(): void;
 
   applyStyle() {
-    if (this.group) {
-      Object.keys(this.styles).forEach(k => this.group.style(k, this.styles[k]));
-      Object.keys(this.attrs).forEach(k => this.group.attr(k, this.attrs[k]));
-    }
+    Object.keys(this.styles).forEach(k => this.group.style(k, this.styles[k]));
+    Object.keys(this.attrs).forEach(k => this.group.attr(k, this.attrs[k]));
   }
 
-  remove() {
-    if (this.group) {
-      this.group.remove();
-    }
+  clearAll() {
+    this.group.selectAll('*').remove();
+    this.group.remove();
+  }
+
+  clear() {
+    this.group.selectAll('*').remove();
   }
 }
 
-export type PositionSize = {
-  left: number,
-  top: number,
-  right: number,
-  bottom: number
+export type RectangleSize = {
+  left?: number,
+  top?: number,
+  right?: number,
+  bottom?: number,
+  width?: number,
+  height?: number
 };
 
-export type RectangleSize = {
-  width: number,
-  height: number
+export const Rect: {left: Function, top: Function, right: Function, bottom: Function, width: Function, height: Function} = {
+  left: (o: RectangleSize) => o ? o.left || 0 : 0,
+  top: (o: RectangleSize) => o ? o.top || 0 : 0,
+  right: (o: RectangleSize) => o ? o.right || 0 : 0,
+  bottom: (o: RectangleSize) => o ? o.bottom || 0 : 0,
+  width: (o: RectangleSize) => o ? o.width || 0 : 0,
+  height: (o: RectangleSize) => o ? o.height || 0 : 0
 };

@@ -1,16 +1,11 @@
-#svg-weight-size {
-  width: 340px;
-  height: 224px;
-  border: 1px solid grey;
 
-  .axis path,
-  .axis line {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
-  }
+.ng-ax-path-svg .axis path,
+.ng-ax-path-svg .axis line {
+  fill: none;
+  shape-rendering: crispEdges;
+}
 
-  .axis text {
-    font: 10px sans-serif;
-  }
+.ng-ax-path-svg .legend text,
+.ng-ax-path-svg .axis text {
+  font: 10px sans-serif;
 }

@@ -1,6 +1,6 @@
 {
   "name": "ng-ax-path",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Coordination module for Angular.",
   "main": "bundles/ngaxpath.umd.js",
   "module": "src/index.js",

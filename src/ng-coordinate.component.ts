@@ -1,11 +1,13 @@
-import { Component, OnInit, ElementRef, Input } from '@angular/core';
+import { Component, OnInit, ElementRef, Input, ViewEncapsulation } from '@angular/core';
 import * as d3 from 'd3';
 
 import { Coordinate } from './models/index';
 
 @Component({
   selector: 'ng-ax-path',
-  template: ""
+  encapsulation: ViewEncapsulation.None,
+  template: '<div class="ng-ax-path-svg"></div>',
+  // styleUrls: ['./ng-coordinate.component.scss']
 })
 export class NgCoordinateComponent implements OnInit {
 
@@ -23,5 +25,7 @@ export class NgCoordinateComponent implements OnInit {
 
   ngOnInit() {
     this.coordinate.appendTo(this.host);
+
+    this.coordinate.buildGroup();
   }
 }
