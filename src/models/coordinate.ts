@@ -52,6 +52,10 @@ export class Coordinate extends SvgElement {
 
   private host: d3.Selection<d3.BaseType, {}, null, undefined>;
 
+  private _hasObservable = false;
+  // TODO
+  private runningObservable = 0;
+
   constructor(
     name: string,
     private fullSize: RectangleSize,
@@ -73,6 +77,10 @@ export class Coordinate extends SvgElement {
     if (yAxis) {
       this.yAxis = yAxis;
     }
+  }
+
+  get hasObservable() {
+    return this._hasObservable;
   }
 
   set hasTitle(hasTitle: boolean) {
@@ -123,13 +131,13 @@ export class Coordinate extends SvgElement {
 
   /**
    * @public
-   * @param {(Path | Point[] | [number, number][])} data
+   * @param {(Path | Point[] | [number, number][] | Observable<[number, number][] | {x: number, y: number}[])} data
    * @returns {Path | null}
    * @memberof Coordinate
    * @see Path, Point
    */
-  addPath(data: Path | Point[] | [number, number][], name?: string): Path | null {
-    // Observable<Response> | Observable<[number, number][]>
+  addPath(data: Path | Point[] | [number, number][] |
+      Observable<[number, number][] | {x: number, y: number}[]>, name?: string): Path | null {
     if (data instanceof Path) {
       return this.addPathFromPath(data);
     } else if (data instanceof Array && data.length > 0 ) {
@@ -138,6 +146,8 @@ export class Coordinate extends SvgElement {
       } else if (data[0] instanceof Array) {
         return this.addPathFromArray(<[number, number][]>data, name);
       }
+    } else if (data instanceof Observable) {
+      return this._addPathFromObservable(data, name);
     }
 
     return null;
@@ -157,6 +167,35 @@ export class Coordinate extends SvgElement {
 
     this._xAxis.adjustDomain(path);
     this._yAxis.adjustDomain(path);
+
+    return path;
+  }
+
+  private _addPathFromObservable(
+    data: Observable<[number, number][] | {x: number, y: number}[]>,
+    name?: string): Path {
+
+    this._hasObservable = true;
+    // TODO
+    this.runningObservable++;
+
+    const path = new Path([], name);
+
+    data.subscribe((d: [number, number][] | {x: number, y: number}[]) => {
+      if (d[0] instanceof Array) {
+        path.points = (<[number, number][]>d).map( (p: [number, number]) => new Point(p[0], p[1]));
+      } else {
+        path.points = (<{x: number, y: number}[]>d).map( (p: {x: number, y: number}) => new Point(p.x, p.y));
+      }
+
+      this.addPathFromPath(path);
+
+      // TODO
+      this.runningObservable--;
+      if (this.runningObservable === 0) {
+        this.buildGroup();
+      }
+    });
 
     return path;
   }

@@ -26,6 +26,8 @@ export class NgCoordinateComponent implements OnInit {
   ngOnInit() {
     this.coordinate.appendTo(this.host);
 
-    this.coordinate.buildGroup();
+    if (!this.coordinate.hasObservable) {
+      this.coordinate.buildGroup();
+    }
   }
 }

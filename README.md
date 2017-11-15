@@ -42,8 +42,10 @@ export class YourModule {}
 2. set ng-ax-path data in component class - app.component.ts
 ```ts
 import { Component, OnInit } from '@angular/core';
-import { Coordinate, Axis, Path, Point, LegendStyle, LegendShape, Legend } from 'ng-ax-path';
+import { Coordinate, Axis, Path, Point, LegendStyle, LegendShape } from 'ng-ax-path';
 import { Http } from '@angular/http';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/map';
 
 @Component({
   selector: 'app-root',
@@ -87,10 +89,25 @@ export class AppComponent implements OnInit {
     path3.hasDot = false;
 
     // add path with Observable
-    this.http.get('assets/data/data1.json').subscribe(d=> {
-      this.coordinate.addPath(d.json(), 'Data from Json').color = 'purple';
-      this.coordinate.buildGroup();
-    });
+    // this.http.get('assets/data/data1.json').subscribe(d=> {
+    //   this.coordinate.addPath(d.json(), 'Data from Json').color = 'purple';
+    //   this.coordinate.buildGroup();
+    // });
+
+    // Observable, data format [[number, number]]
+    const path4 = this.coordinate.addPath(
+      this.http.get('assets/data/data1.json')
+        .map(d => d.json()),
+      'Data from Json'
+    );
+    path4.color = 'purple';
+
+    // Observable, data format [{x,y}]
+    this.coordinate.addPath(
+      this.http.get('assets/data/data2.json')
+        .map( d => d.json().map(c => ({ x: c[0], y: c[1] }))),
+      'Data Set 5 Json'
+    ).color = 'green';
   }
 }
 ```
