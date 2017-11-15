@@ -20,7 +20,22 @@ Compatible with __Ionic 2__, __Angular2__ and __Angular4__ versions.
 npm install ng-ax-path --save
 
 ## Usage
+import NgCoordinateModule inside your module to be able to use ng-ax-path component.
 
+```ts
+import { NgCoordinateModule } from 'ng-ax-path';
+
+@NgModule({
+  imports: [
+    ...
+    NgCoordinateModule
+  ],
+  ...
+})
+export class YourModule {}
+```
+
+### Code Examples
 1. add ng-ax-path component into html template - app.component.html
 <ng-ax-path [coordinate]="coordinate"></ng-ax-path>
 
