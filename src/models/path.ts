@@ -7,6 +7,7 @@ import { d3_util } from './d3.util';
 export class Path extends SvgElement {
   parent: Coordinate;
   axisStep = 1;
+  public hasDot = true;
 
   constructor(
     public points: Point[],
@@ -42,7 +43,11 @@ export class Path extends SvgElement {
     const d = this._buildSvgPath();
 
     this.group.append('path').attr('d', d);
-    this.points.forEach((p) => this.buildPoint(p, this.color));
+
+    if (this.hasDot) {
+      this.points.forEach((p) => this.buildPoint(p, this.color));
+    }
+
   }
 
   private buildPoint(p: Point, color: string) {

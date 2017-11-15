@@ -55,7 +55,7 @@ export class AppComponent implements OnInit {
     this.coordinate.yAxis.extraSpace = 10;
 
     // add path from Path instance
-    const data = [[0,0], [3,10],[6,18],[9,26],[10,60],[12,40],[15,60],[18,80]];
+    const data = [[0,0],[3,10],[6,18],[9,26],[10,60],[12,40],[15,60],[18,80]];
     const points: Point[] = data.map(d=>new Point( d[0], d[1] ));
     const path = new Path(points, 'Data Set 1 - 2014');
     this.coordinate.addPath(path);
@@ -67,7 +67,9 @@ export class AppComponent implements OnInit {
     // add path from Points[]
     const data3 = [[2,53],[4,57],[7,64],[9,73],[10,84],[12,100],[16,97], [18,102], [20,78]];
     const points3: Point[] = data3.map(d=>new Point( d[0], d[1] ));
-    this.coordinate.addPath(points3, 'Data 3').color = 'blue';
+    const path3 = this.coordinate.addPath(points3, 'Data 3');
+    path3.color = 'blue';
+    path3.hasDot = false;
 
     // add path with Observable
     this.http.get('assets/data/data1.json').subscribe(d=> {
