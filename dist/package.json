@@ -1,7 +1,7 @@
 {
   "name": "ng-ax-path",
   "version": "0.2.1",
-  "description": "Coordination module for Angular.",
+  "description": "Angular curved line chart component for web and Ionic application",
   "main": "bundles/ngaxpath.umd.js",
   "module": "src/index.js",
   "typings": "src/index.d.ts",
@@ -12,7 +12,7 @@
     "angular4",
     "d3"
   ],
-  "author": "Samuel",
+  "author": "Samuel Xie<xie.samuel@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
