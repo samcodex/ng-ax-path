@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpModule } from '@angular/http';
 
-import { NgCoordinateModule } from 'ng-ax-path';
+import { NgCoordinateModule } from '../../../src/';
 import { AppComponent } from './app.component';
 
 @NgModule({

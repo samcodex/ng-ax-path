@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Coordinate, Axis, Path, Point, LegendStyle, LegendShape } from 'ng-ax-path';
+import { Coordinate, Axis, Path, Point, LegendStyle, LegendShape, PathType, PointShape } from '../../../src';
 import { Http } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
@@ -29,17 +29,19 @@ export class AppComponent implements OnInit {
     this.coordinate.yAxis.extraSpace = 10;
 
     // add path from Path instance
-    const data = [[0,0],[3,10],[6,18],[9,26],[10,60],[12,40],[15,60],[18,80]];
+    const data = [[0,0],[3,10],[6,18],[9,16],[12,22],[13,26],[15,30],[18,40],[20,60],[22,62],[24,50]];
     const points: Point[] = data.map(d=>new Point( d[0], d[1] ));
     const path = new Path(points, 'Data Set 1 - 2014');
     this.coordinate.addPath(path);
 
     // add path from tuple[number, number]
     const data2: [number, number][] = [[2,10],[4,18],[7,26],[9,60],[10,40],[12,60],[16,80], [18,90], [20,120]];
-    this.coordinate.addPath(data2, 'Data 2').color = 'red';
+    const path2 = this.coordinate.addPath(data2, 'Data 2');
+    path2.color = 'red';
+    path2.pointShape = PointShape.SQUARE;
 
     // add path from Points[]
-    const data3 = [[2,53],[4,57],[7,64],[9,73],[10,84],[12,100],[16,97], [18,102], [20,78]];
+    const data3 = [[2,53],[4,57],[7,64],[9,73],[10,84],[12,100],[16,97], [18,102], [20,78], [22,68]];
     const points3: Point[] = data3.map(d=>new Point( d[0], d[1] ));
     const path3 = this.coordinate.addPath(points3, 'Data 3');
     path3.color = 'blue';
@@ -54,15 +56,17 @@ export class AppComponent implements OnInit {
     // Observable, data format [[number, number]]
     const path4 = this.coordinate.addPath(
       this.http.get('assets/data/data1.json')
-        .map(d => d.json()),
+        .map(d => <[number, number][]>d.json()),
       'Data from Json'
     );
     path4.color = 'purple';
+    path4.pathType = PathType.STRAIGHT_LINE;
+    path4.pointShape = PointShape.TRIANGLE;
 
     // Observable, data format [{x,y}]
     this.coordinate.addPath(
       this.http.get('assets/data/data2.json')
-        .map( d => d.json().map(c => ({ x: c[0], y: c[1] }))),
+        .map( d => <{x: number, y: number}[]>d.json().map(c => ({ x: c[0], y: c[1] }))),
       'Data Set 5 Json'
     ).color = 'green';
   }

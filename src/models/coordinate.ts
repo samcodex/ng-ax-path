@@ -1,8 +1,8 @@
-import { Response } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import * as d3 from 'd3';
 import { Axis, AXIS_TYPE} from './axis';
-import { Path, Point } from './path';
+import { Path } from './path';
+import { Point } from './point';
 import { SvgElement, RectangleSize, Rect } from './svg-element';
 import { Legend, LegendStyle, LegendShape } from './legend';
 import { d3_util } from './d3.util';

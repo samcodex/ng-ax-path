@@ -3,11 +3,19 @@ import { CSPL } from './cspl';
 import { Coordinate } from './coordinate';
 import { SvgElement } from './svg-element';
 import { d3_util } from './d3.util';
+import { Point, PointShape } from './point';
+
+export enum PathType {
+  CURVED_LINE = 'CurvedLine',
+  STRAIGHT_LINE = 'StraightLine'
+}
 
 export class Path extends SvgElement {
   parent: Coordinate;
   axisStep = 1;
   public hasDot = true;
+  public pathType: PathType = PathType.CURVED_LINE;
+  public pointShape: PointShape = PointShape.CIRCLE;
 
   constructor(
     public points: Point[],
@@ -40,27 +48,25 @@ export class Path extends SvgElement {
 
   buildGroup() {
     this.applyStyle();
-    const d = this._buildSvgPath();
+    let path: [number, number][];
 
-    this.group.append('path').attr('d', d);
-
-    if (this.hasDot) {
-      this.points.forEach((p) => this.buildPoint(p, this.color));
+    if (this.pathType === PathType.CURVED_LINE) {
+      path = this._buildCurvedPath();
+    } else {
+      path = this.points.map(p => this._toXY(p.x, p.y));
     }
 
+    this.group.append('path').attr('d', path.reduce((s, p) => s += p.join(',') + ' ', 'M').trim());
+
+    if (this.hasDot) {
+      this.points.forEach(
+        (p: Point) => this.group.append(() => p.createElement(this.parent, this.color, this.pointShape).node())
+      );
+    }
   }
 
-  private buildPoint(p: Point, color: string) {
-    this.group.append('circle')
-      .attr('cx', this.parent.xScale(p.x))
-      .attr('cy', this.parent.yScale(p.y))
-      .attr('r', 2)
-      .attr('fill', color)
-      .attr('stroke', 'transparent');
-  }
-
-  private _buildSvgPath() {
-    let path;
+  private _buildCurvedPath(): [number, number][] {
+    const path: [number, number][] = [];
     const step = 2 / this.parent.xScale(this.axisStep);
     const points: Point[] = this.points;
     const xs: number[] = [],
@@ -78,9 +84,9 @@ export class Path extends SvgElement {
     const minx = points[0].x;
     const maxx = points[points.length - 1].x;
 
-    path = 'M' + this._toXY(minx, CSPL.evalSpline(minx, xs, ys, ks)).join(',');
+    path.push(this._toXY(minx, CSPL.evalSpline(minx, xs, ys, ks)));
     for (let i = minx + step; i <= maxx; i += step) {
-      path += (' ' + this._toXY(i, CSPL.evalSpline(i, xs, ys, ks)).join(','));
+      path.push(this._toXY(i, CSPL.evalSpline(i, xs, ys, ks)));
     }
 
     return path;
@@ -88,13 +94,5 @@ export class Path extends SvgElement {
 
   private _toXY(x: number, y: number): [number, number] {
     return [this.parent.xScale(x), this.parent.yScale(y)];
-  }
-}
-
-export class Point {
-  constructor(
-    public x: number,
-    public y: number
-  ) {
   }
 }
