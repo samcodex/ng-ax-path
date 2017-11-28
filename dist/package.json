@@ -1,6 +1,6 @@
 {
   "name": "ng-ax-path",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Angular curved line chart component for web and Ionic application",
   "main": "bundles/ngaxpath.umd.js",
   "module": "src/index.js",
