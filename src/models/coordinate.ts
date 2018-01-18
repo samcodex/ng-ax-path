@@ -38,7 +38,7 @@ export type CoordinateOptions = {
 export class Coordinate extends SvgElement {
 
   private defaultMargin: RectangleSize = DEFAULT_MARGIN;
-  private size: RectangleSize = {width: 0, height: 0};
+  public fullSize: RectangleSize = {width: 0, height: 0};
 
   /**
    * Coordinate margin, can be changed
@@ -58,7 +58,7 @@ export class Coordinate extends SvgElement {
 
   constructor(
     name: string,
-    private fullSize: RectangleSize,
+    fullSize: RectangleSize,
     private options: CoordinateOptions = {hasTitle: true, hasLegend: true},
     public legend: Legend = LegendStyle.UP_LEFT_IN_BLOCK,
     xAxis?: Axis,
@@ -68,6 +68,8 @@ export class Coordinate extends SvgElement {
 
     // this.legend = styles[10];
 
+    this.size = {width: 0, height: 0};
+    this.fullSize = fullSize;
     this.titleGroup = d3_util.createGroup();
 
     if (xAxis) {
@@ -115,10 +117,6 @@ export class Coordinate extends SvgElement {
 
   get yAxis(): Axis{
     return this._yAxis;
-  }
-
-  get $size(): RectangleSize {
-    return this.size;
   }
 
   /**

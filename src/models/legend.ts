@@ -1,4 +1,3 @@
-import { Coordinate } from './coordinate';
 import { SvgElement, RectangleSize, Rect } from './svg-element';
 import { d3_util } from './d3.util';
 

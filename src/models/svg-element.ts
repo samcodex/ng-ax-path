@@ -1,16 +1,29 @@
 import * as d3 from 'd3';
 import { d3_util } from './d3.util';
 
+export enum SVG_ELEMENT_TYPE {
+  CANVAS = 'Canvas',
+  AXIS_X = 'AxisX',
+  AXIS_Y = 'AxisY',
+  LEGEND = 'Legend',
+  PATH = 'Path'
+}
+
+export type d3Element = d3.Selection<d3.BaseType, {}, null, undefined>;
+
 export abstract class SvgElement {
-  protected parent: SvgElement;
+  public name: string;
+  public parent: SvgElement;
   protected children: SvgElement[] = new Array<SvgElement>();
   protected attrs: {[key: string]: any} = {};
   protected styles: {[key: string]: any} = {};
   public group: d3.Selection<d3.BaseType, {}, null, undefined>;
+  public size: RectangleSize;
 
   constructor(
-    public name: string = ''
+    name: string = ''
   ) {
+    this.name = name;
     this.group = d3_util.createGroup();
   }
 

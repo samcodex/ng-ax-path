@@ -1,5 +1,4 @@
 import * as d3 from 'd3';
-import { Coordinate } from './coordinate';
 import { SvgElement, Rect } from './svg-element';
 import { Path } from './path';
 import { d3_util } from './d3.util';
@@ -19,8 +18,6 @@ export class Axis extends SvgElement {
 
   scale: d3.ScaleLinear<number, number>;
   axis: d3.Axis<number | {valueOf(): number}>;
-
-  parent: Coordinate;
 
   constructor(
     name: string,
@@ -79,6 +76,8 @@ export class Axis extends SvgElement {
   }
 
   buildGroup() {
+    const parentSize = this.parent.size;
+
     this.scale = d3.scaleLinear()
       .domain(this.domain)
       .range(this.range);
@@ -98,9 +97,9 @@ export class Axis extends SvgElement {
 
     if (this.type === AXIS_TYPE.X) {
       this.group
-        .attr('transform', 'translate(0,' + this.parent.$size.height + ')')
+        .attr('transform', 'translate(0,' + parentSize.height + ')')
         .append('text')
-          .attr('x', Rect.width(this.parent.$size))
+          .attr('x', Rect.width(parentSize))
           .attr('y', -3)
           .attr('dy', '-.35em')
           .attr('fill', '#000')
@@ -109,7 +108,7 @@ export class Axis extends SvgElement {
 
       this.group.selectAll('.tick:not(:first-of-type)')
         .append('line')
-        .attr('y2', -Rect.height(this.parent.$size))
+        .attr('y2', -Rect.height(parentSize))
         .attr('stroke', '#777')
         .attr('stroke-dasharray', '2,2');
 
@@ -124,7 +123,7 @@ export class Axis extends SvgElement {
 
       this.group.selectAll('.tick:not(:first-of-type)')
         .append('line')
-        .attr('x2', Rect.width(this.parent.$size))
+        .attr('x2', Rect.width(parentSize))
         .attr('stroke', '#777')
         .attr('stroke-dasharray', '2,2');
     }
