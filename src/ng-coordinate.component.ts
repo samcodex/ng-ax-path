@@ -1,17 +1,17 @@
 import { Component, OnInit, ElementRef, Input, ViewEncapsulation } from '@angular/core';
 import * as d3 from 'd3';
 
-import { Coordinate } from './models/index';
+import { Canvas } from './models/canvas';
 
 @Component({
   selector: 'ng-ax-path',
   encapsulation: ViewEncapsulation.None,
   template: '<div class="ng-ax-path-svg"></div>',
-  // styleUrls: ['./ng-coordinate.component.scss']
+  // styleUrls: ['./ng-canvas.component.scss']
 })
 export class NgCoordinateComponent implements OnInit {
 
-  @Input() private coordinate: Coordinate;
+  @Input() private canvas: Canvas;
 
   private htmlElement: HTMLElement;
   private host: d3.Selection<Element, {}, Element | any, {} | any>;
@@ -24,10 +24,10 @@ export class NgCoordinateComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.coordinate.appendTo(this.host);
+    this.canvas.appendTo(this.host.select('div'));
 
-    if (!this.coordinate.hasObservable) {
-      this.coordinate.buildGroup();
+    if (!this.canvas.hasObservable) {
+      this.canvas.buildGroup();
     }
   }
 }

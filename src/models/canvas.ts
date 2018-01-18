@@ -1,11 +1,12 @@
 import { Observable } from 'rxjs/Observable';
 import * as d3 from 'd3';
-import { Axis, AXIS_TYPE} from './axis';
+import { Axis} from './axis';
 import { Path } from './path';
 import { Point } from './point';
-import { SvgElement, RectangleSize, Rect } from './svg-element';
+import { SvgElement, RectangleSize, Rect, SVG_ELEMENT_TYPE } from './svg-element';
 import { Legend, LegendStyle, LegendShape } from './legend';
 import { d3_util } from './d3.util';
+import { AxisOptions } from 'src';
 
 const DEFAULT_MARGIN: RectangleSize = {top: 5, left: 30, right: 15, bottom: 20};
 
@@ -30,25 +31,26 @@ const styles = [
   LegendStyle.BOTTOM_RIGHT_SIDE_BLOCK
 ];
 
-export type CoordinateOptions = {
-  hasTitle: boolean,
-  hasLegend: boolean
-};
+export interface CanvasOptions {
+  hasTitle: boolean;
+  hasLegend: boolean;
+}
 
-export class Coordinate extends SvgElement {
+export class Canvas extends SvgElement {
 
   private defaultMargin: RectangleSize = DEFAULT_MARGIN;
   public fullSize: RectangleSize = {width: 0, height: 0};
+  private options: CanvasOptions;
+  public legend: Legend;
 
   /**
-   * Coordinate margin, can be changed
+   * Canvas margin, can be changed
    */
   public margin: RectangleSize = {top: 0, left: 0, right: 0, bottom: 0};
 
   private titleGroup: d3.Selection<d3.BaseType, {}, null, undefined>;
   private paths: Path[] = new Array<Path>();
-  private _xAxis: Axis;
-  private _yAxis: Axis;
+  private xyAxis: {[key: string]: Axis};
 
   private host: d3.Selection<d3.BaseType, {}, null, undefined>;
 
@@ -59,26 +61,19 @@ export class Coordinate extends SvgElement {
   constructor(
     name: string,
     fullSize: RectangleSize,
-    private options: CoordinateOptions = {hasTitle: true, hasLegend: true},
-    public legend: Legend = LegendStyle.UP_LEFT_IN_BLOCK,
-    xAxis?: Axis,
-    yAxis?: Axis
+    options: CanvasOptions = {hasTitle: true, hasLegend: true},
+    legend: Legend = LegendStyle.UP_LEFT_IN_BLOCK
   ) {
-    super(name);
+    super(SVG_ELEMENT_TYPE.CANVAS, name);
 
     // this.legend = styles[10];
 
     this.size = {width: 0, height: 0};
     this.fullSize = fullSize;
+    this.options = options;
+    this.legend = legend;
+
     this.titleGroup = d3_util.createGroup();
-
-    if (xAxis) {
-      this.xAxis = xAxis;
-    }
-
-    if (yAxis) {
-      this.yAxis = yAxis;
-    }
   }
 
   get hasObservable() {
@@ -93,35 +88,47 @@ export class Coordinate extends SvgElement {
     this.options.hasLegend = hasLegend;
   }
 
-  set xAxis(xAxis: Axis) {
-    if (xAxis) {
-      this._xAxis = xAxis;
-      this._xAxis.type = AXIS_TYPE.X;
-
-      this.addChild(xAxis);
-    }
+  createX(name: string, unit: string, options: AxisOptions): Axis {
+    return this.xAxis = new Axis(SVG_ELEMENT_TYPE.AXIS_X, name, unit, options);
   }
 
-  get xAxis(): Axis{
-    return this._xAxis;
+  createY(name: string, unit: string, options: AxisOptions): Axis {
+    return this.yAxis = new Axis(SVG_ELEMENT_TYPE.AXIS_Y, name, unit, options);
+  }
+
+  private setXyAxis(axis: Axis) {
+    if (!this.xyAxis) {
+      this.xyAxis = {};
+    }
+    this.xyAxis[axis.type] = axis;
+    this.addChild(axis);
+  }
+
+  set xAxis(xAxis: Axis) {
+    if (xAxis) {
+      xAxis.type = SVG_ELEMENT_TYPE.AXIS_X;
+      this.setXyAxis(xAxis);
+    }
   }
 
   set yAxis(yAxis: Axis) {
     if (yAxis) {
-      this._yAxis = yAxis;
-      this._yAxis.type = AXIS_TYPE.Y;
-
-      this.addChild(yAxis);
+      yAxis.type = SVG_ELEMENT_TYPE.AXIS_Y;
+      this.setXyAxis(yAxis);
     }
   }
 
+  get xAxis(): Axis{
+    return this.xyAxis[SVG_ELEMENT_TYPE.AXIS_X];
+  }
+
   get yAxis(): Axis{
-    return this._yAxis;
+    return this.xyAxis[SVG_ELEMENT_TYPE.AXIS_Y];
   }
 
   /**
    * set legend shape
-   * @memberof Coordinate
+   * @memberof Canvas
    */
   set legendShape(legendShape: LegendShape) {
     this.legend.legendShape = legendShape;
@@ -131,7 +138,7 @@ export class Coordinate extends SvgElement {
    * @public
    * @param {(Path | Point[] | [number, number][] | Observable<[number, number][] | {x: number, y: number}[])} data
    * @returns {Path | null}
-   * @memberof Coordinate
+   * @memberof Canvas
    * @see Path, Point
    */
   addPath(data: Path | Point[] | [number, number][] |
@@ -163,8 +170,8 @@ export class Coordinate extends SvgElement {
     this.paths.push(path);
     this.addChild(path);
 
-    this._xAxis.adjustDomain(path);
-    this._yAxis.adjustDomain(path);
+    this.xAxis.resetDomainWithPath(path);
+    this.yAxis.resetDomainWithPath(path);
 
     return path;
   }
@@ -199,18 +206,27 @@ export class Coordinate extends SvgElement {
   }
 
   xScale(value: number): number {
-    return this._xAxis.scale(value);
+    return this.xAxis.getScale()(value);
   }
 
   yScale(value: number): number {
-    return this._yAxis.scale(value);
+    return this.yAxis.getScale()(value);
   }
 
   appendTo(host: d3.Selection<d3.BaseType, {}, null, undefined>) {
-    this.host = host.select('div').insert('svg')
-      .attr('width', Rect.width(this.fullSize))
-      .attr('height', Rect.height(this.fullSize));
+    this.host = host.insert('svg');
 
+    this.setHostSize();
+
+    this.appendGroup();
+  }
+
+  private setHostSize() {
+    this.host.attr('width', Rect.width(this.fullSize))
+      .attr('height', Rect.height(this.fullSize));
+  }
+
+  private appendGroup() {
     this.host.append(() => this.group.node());
 
     if (this.options.hasLegend) {
@@ -246,20 +262,20 @@ export class Coordinate extends SvgElement {
       bottom: Rect.bottom(defMargin) + Rect.bottom(margin)
     };
 
-    // calculate coordinate size
+    // calculate canvas size
     this.size.width = Rect.width(this.fullSize) - chartMargin.left - chartMargin.right;
     this.size.height = Rect.height(this.fullSize) - chartMargin.top - chartMargin.bottom;
 
     // set x and y axis
-    if (this._xAxis) {
-      this._xAxis.range = [0, this.size.width];
+    if (this.xAxis) {
+      this.xAxis.setRange([0, this.size.width]);
     }
 
-    if (this._yAxis) {
-      this._yAxis.range = [this.size.height, 0];
+    if (this.yAxis) {
+      this.yAxis.setRange([this.size.height, 0]);
     }
 
-    // move coordinate
+    // move canvas
     this.group.attr('transform', `translate(${chartMargin.left},${chartMargin.top})`);
 
     // draw x-axis, y-axis and paths

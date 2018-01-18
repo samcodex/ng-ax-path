@@ -1,23 +1,23 @@
 import { d3_util} from './d3.util';
-import { Coordinate } from './coordinate';
+import { Canvas } from './canvas';
 import { SvgElement } from './svg-element';
 
 export class Point {
   pointShape: PointShape | null = null;
-  color: string | null = null;
-  text: string | null = null;
+  color: string;
 
   constructor(
     public x: number,
     public y: number,
-    color?: string
+    color: string = ''
   ) {
+    this.color = color;
   }
 
-  createElement(coordinate: Coordinate, color: string, pointShape?: PointShape): d3.Selection<d3.BaseType, {}, null, undefined> {
+  createElement(canvas: Canvas, color: string, pointShape?: PointShape): d3.Selection<d3.BaseType, {}, null, undefined> {
     let element: d3.Selection<d3.BaseType, {}, null, undefined>;
-    const x = coordinate.xScale(this.x);
-    const y = coordinate.yScale(this.y);
+    const x = canvas.xScale(this.x);
+    const y = canvas.yScale(this.y);
 
     pointShape = this.pointShape || pointShape;
     color = this.color || color;

@@ -12,6 +12,7 @@ export enum SVG_ELEMENT_TYPE {
 export type d3Element = d3.Selection<d3.BaseType, {}, null, undefined>;
 
 export abstract class SvgElement {
+  public type: SVG_ELEMENT_TYPE;
   public name: string;
   public parent: SvgElement;
   protected children: SvgElement[] = new Array<SvgElement>();
@@ -21,8 +22,10 @@ export abstract class SvgElement {
   public size: RectangleSize;
 
   constructor(
+    type: SVG_ELEMENT_TYPE,
     name: string = ''
   ) {
+    this.type = type;
     this.name = name;
     this.group = d3_util.createGroup();
   }

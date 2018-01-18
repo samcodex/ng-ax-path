@@ -1,4 +1,4 @@
-import { SvgElement, RectangleSize, Rect } from './svg-element';
+import { SvgElement, RectangleSize, Rect, SVG_ELEMENT_TYPE } from './svg-element';
 import { d3_util } from './d3.util';
 
 enum PositionH {
@@ -58,7 +58,7 @@ export class Legend extends SvgElement {
     public position: LegendPosition,
     public range: LegendRange
   ) {
-    super();
+    super(SVG_ELEMENT_TYPE.LEGEND);
 
     const ps: string[] = position.split(/(?=[A-Z])/);
     this.positionV = <PositionV>PositionV[<any>ps[0].toUpperCase()];

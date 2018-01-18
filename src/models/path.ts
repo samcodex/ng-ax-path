@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { CSPL } from './cspl';
-import { Coordinate } from './coordinate';
-import { SvgElement } from './svg-element';
+import { Canvas } from './canvas';
+import { SvgElement, SVG_ELEMENT_TYPE } from './svg-element';
 import { d3_util } from './d3.util';
 import { Point, PointShape } from './point';
 
@@ -11,18 +11,20 @@ export enum PathType {
 }
 
 export class Path extends SvgElement {
-  parent: Coordinate;
+  parent: Canvas;
   axisStep = 1;
   public hasDot = true;
   public pathType: PathType = PathType.CURVED_LINE;
   public pointShape: PointShape = PointShape.CIRCLE;
+  public points: Point[];
 
   constructor(
-    public points: Point[],
-    public name: string = ''
+    points: Point[],
+    name: string = ''
   ) {
-    super(name);
+    super(SVG_ELEMENT_TYPE.PATH, name);
 
+    this.points = points;
     this.setDefaultStyle();
     this.sort();
   }

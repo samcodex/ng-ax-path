@@ -1,4 +1,4 @@
-export * from './coordinate';
+export * from './canvas';
 export * from './svg-element';
 export * from './axis';
 export * from './path';
