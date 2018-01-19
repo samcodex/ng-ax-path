@@ -12,8 +12,9 @@ export enum CanvasStyle {
 }
 
 export const CanvasStyles: {
-  Coordinate: StyleOptions,
-  CanvasBoard: StyleOptions
+  [key: string]: StyleOptions,
+  'Coordinate': StyleOptions,
+  'CanvasBoard': StyleOptions
 } = {
   Coordinate: {
     CanvasOptions: {

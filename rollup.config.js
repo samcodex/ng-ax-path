@@ -3,7 +3,7 @@ export default {
   dest: 'dist/bundles/ngaxpath.umd.js',
   sourceMap: false,
   format: 'umd',
-  moduleName: 'NgCoordinateModule',
+  moduleName: 'NgCanvasModule',
   globals: {
     '@angular/core': 'ng.core',
     '@angular/common': 'common',
