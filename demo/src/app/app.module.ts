@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpModule } from '@angular/http';
 
-import { NgCoordinateModule } from '../../../src/';
+import { NgCanvasModule } from '../../../src/';
 import { AppComponent } from './app.component';
 
 @NgModule({
@@ -12,7 +12,7 @@ import { AppComponent } from './app.component';
   imports: [
     HttpModule,
     BrowserModule,
-    NgCoordinateModule
+    NgCanvasModule
   ],
   providers: [],
   bootstrap: [AppComponent]

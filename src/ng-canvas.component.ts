@@ -9,7 +9,7 @@ import { Canvas } from './models/canvas';
   template: '<div class="ng-ax-path-svg"></div>',
   // styleUrls: ['./ng-canvas.component.scss']
 })
-export class NgCoordinateComponent implements OnInit {
+export class NgCanvasComponent implements OnInit {
 
   @Input() private canvas: Canvas;
 

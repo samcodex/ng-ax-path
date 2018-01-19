@@ -1,12 +1,13 @@
 import { Observable } from 'rxjs/Observable';
 import * as d3 from 'd3';
-import { Axis} from './axis';
+
+import { Axis, AxisOptions} from './axis';
 import { Path } from './path';
 import { Point } from './point';
 import { SvgElement, RectangleSize, Rect, SVG_ELEMENT_TYPE } from './svg-element';
 import { Legend, LegendStyle, LegendShape } from './legend';
 import { d3_util } from './d3.util';
-import { AxisOptions } from 'src';
+import { CanvasStyle, CanvasStyles, StyleOptions } from './canvas-style';
 
 const DEFAULT_MARGIN: RectangleSize = {top: 5, left: 30, right: 15, bottom: 20};
 
@@ -32,25 +33,29 @@ const styles = [
 ];
 
 export interface CanvasOptions {
-  hasTitle: boolean;
-  hasLegend: boolean;
+  hasTitle?: boolean;
+  hasLegend?: boolean;
 }
 
 export class Canvas extends SvgElement {
-
-  private defaultMargin: RectangleSize = DEFAULT_MARGIN;
-  public fullSize: RectangleSize = {width: 0, height: 0};
-  private options: CanvasOptions;
-  public legend: Legend;
-
-  /**
+    /**
    * Canvas margin, can be changed
    */
   public margin: RectangleSize = {top: 0, left: 0, right: 0, bottom: 0};
 
+  public defaultMargin: RectangleSize = DEFAULT_MARGIN;
+  public fullSize: RectangleSize = {width: 0, height: 0};
+
+  private canvasStyle: CanvasStyle;
+  private styleOptions: StyleOptions;
+  public canvasOptions: CanvasOptions = {};
+
+  public legend: Legend;
+  private canvasDomain: [number, number];
+
   private titleGroup: d3.Selection<d3.BaseType, {}, null, undefined>;
   private paths: Path[] = new Array<Path>();
-  private xyAxis: {[key: string]: Axis};
+  private xyAxis: {[key: string]: Axis} = {};
 
   private host: d3.Selection<d3.BaseType, {}, null, undefined>;
 
@@ -61,7 +66,8 @@ export class Canvas extends SvgElement {
   constructor(
     name: string,
     fullSize: RectangleSize,
-    options: CanvasOptions = {hasTitle: true, hasLegend: true},
+    canvasStyle: CanvasStyle = CanvasStyle.Coordinate,
+    domain: [number, number] = [0, 0],
     legend: Legend = LegendStyle.UP_LEFT_IN_BLOCK
   ) {
     super(SVG_ELEMENT_TYPE.CANVAS, name);
@@ -70,38 +76,17 @@ export class Canvas extends SvgElement {
 
     this.size = {width: 0, height: 0};
     this.fullSize = fullSize;
-    this.options = options;
+    this.canvasStyle = canvasStyle || CanvasStyle.Coordinate;
+    this.styleOptions = CanvasStyles[this.canvasStyle];
+
     this.legend = legend;
+    this.canvasDomain = domain;
 
     this.titleGroup = d3_util.createGroup();
   }
 
   get hasObservable() {
     return this._hasObservable;
-  }
-
-  set hasTitle(hasTitle: boolean) {
-    this.options.hasTitle = hasTitle;
-  }
-
-  set hasLegend(hasLegend: boolean) {
-    this.options.hasLegend = hasLegend;
-  }
-
-  createX(name: string, unit: string, options: AxisOptions): Axis {
-    return this.xAxis = new Axis(SVG_ELEMENT_TYPE.AXIS_X, name, unit, options);
-  }
-
-  createY(name: string, unit: string, options: AxisOptions): Axis {
-    return this.yAxis = new Axis(SVG_ELEMENT_TYPE.AXIS_Y, name, unit, options);
-  }
-
-  private setXyAxis(axis: Axis) {
-    if (!this.xyAxis) {
-      this.xyAxis = {};
-    }
-    this.xyAxis[axis.type] = axis;
-    this.addChild(axis);
   }
 
   set xAxis(xAxis: Axis) {
@@ -119,10 +104,18 @@ export class Canvas extends SvgElement {
   }
 
   get xAxis(): Axis{
+    if (!this.xyAxis[SVG_ELEMENT_TYPE.AXIS_X]) {
+      this.xAxis = this.createX('', '', {});
+    }
+
     return this.xyAxis[SVG_ELEMENT_TYPE.AXIS_X];
   }
 
   get yAxis(): Axis{
+    if (!this.xyAxis[SVG_ELEMENT_TYPE.AXIS_Y]) {
+      this.yAxis = this.createY('', '', {});
+    }
+
     return this.xyAxis[SVG_ELEMENT_TYPE.AXIS_Y];
   }
 
@@ -132,6 +125,27 @@ export class Canvas extends SvgElement {
    */
   set legendShape(legendShape: LegendShape) {
     this.legend.legendShape = legendShape;
+  }
+
+  getX(): Axis {
+    return this.xAxis;
+  }
+
+  getY(): Axis {
+    return this.yAxis;
+  }
+
+  createX(name: string, unit: string, options: AxisOptions): Axis {
+    return this.xAxis = new Axis(SVG_ELEMENT_TYPE.AXIS_X, name, unit, options);
+  }
+
+  createY(name: string, unit: string, options: AxisOptions): Axis {
+    return this.yAxis = new Axis(SVG_ELEMENT_TYPE.AXIS_Y, name, unit, options);
+  }
+
+  private setXyAxis(axis: Axis) {
+    this.xyAxis[axis.type] = axis;
+    this.addChild(axis);
   }
 
   /**
@@ -169,10 +183,6 @@ export class Canvas extends SvgElement {
   addPathFromPath(path: Path): Path {
     this.paths.push(path);
     this.addChild(path);
-
-    this.xAxis.resetDomainWithPath(path);
-    this.yAxis.resetDomainWithPath(path);
-
     return path;
   }
 
@@ -187,11 +197,13 @@ export class Canvas extends SvgElement {
     const path = new Path([], name);
 
     data.subscribe((d: [number, number][] | {x: number, y: number}[]) => {
+      let points: Point[];
       if (d[0] instanceof Array) {
-        path.points = (<[number, number][]>d).map( (p: [number, number]) => new Point(p[0], p[1]));
+        points = (<[number, number][]>d).map( (p: [number, number]) => new Point(p[0], p[1]));
       } else {
-        path.points = (<{x: number, y: number}[]>d).map( (p: {x: number, y: number}) => new Point(p.x, p.y));
+        points = (<{x: number, y: number}[]>d).map( (p: {x: number, y: number}) => new Point(p.x, p.y));
       }
+      path.setPoints(points);
 
       this.addPathFromPath(path);
 
@@ -226,33 +238,44 @@ export class Canvas extends SvgElement {
       .attr('height', Rect.height(this.fullSize));
   }
 
+  private applyCanvasStyle() {
+    this.canvasOptions = Object.assign({}, this.styleOptions.CanvasOptions, this.canvasOptions);
+  }
+
   private appendGroup() {
+    this.applyCanvasStyle();
+
     this.host.append(() => this.group.node());
 
-    if (this.options.hasLegend) {
+    if (this.canvasOptions.hasLegend) {
       this.host.append(() => this.legend.group.node());
     }
 
-    if (this.options.hasTitle) {
+    if (this.canvasOptions.hasTitle) {
       this.host.append(() => this.titleGroup.node());
     }
   }
 
   buildGroup() {
+    const xAxis = this.xAxis;
+    const yAxis = this.yAxis;
+
+    this.applyCanvasStyle();
+
     // draw title
-    if (this.options.hasTitle) {
+    if (this.canvasOptions.hasTitle) {
       this.buildTitle();
     }
 
     // draw legend items
-    if (this.options.hasLegend) {
+    if (this.canvasOptions.hasLegend) {
       const legendItem = this.legend.createLegendItem();
       this.paths.forEach((p, i) => legendItem.loop(p.name, p.color, i));
       legendItem.end();
     }
 
     // calculate margin
-    const margin = this.options.hasLegend ? this.legend.getCoordinateMargin(this.margin) : this.margin;
+    const margin = this.canvasOptions.hasLegend ? this.legend.getCoordinateMargin(this.margin) : this.margin;
     const defMargin = this.defaultMargin;
     const titleRect = d3_util.getRect(this.titleGroup);
     const chartMargin = {
@@ -262,43 +285,46 @@ export class Canvas extends SvgElement {
       bottom: Rect.bottom(defMargin) + Rect.bottom(margin)
     };
 
+    // move canvas
+    this.group.attr('transform', `translate(${chartMargin.left},${chartMargin.top})`);
+
     // calculate canvas size
     this.size.width = Rect.width(this.fullSize) - chartMargin.left - chartMargin.right;
     this.size.height = Rect.height(this.fullSize) - chartMargin.top - chartMargin.bottom;
 
+    xAxis.applyAxisOptions(this.styleOptions.AxisOptions);
+    yAxis.applyAxisOptions(this.styleOptions.AxisOptions);
+
     // set x and y axis
-    if (this.xAxis) {
-      this.xAxis.setRange([0, this.size.width]);
-    }
+    xAxis.setRange([0, this.size.width]);
+    xAxis.setDomain([0, this.canvasDomain[0]]);
 
-    if (this.yAxis) {
-      this.yAxis.setRange([this.size.height, 0]);
-    }
+    yAxis.setRange([this.size.height, 0]);
+    yAxis.setDomain([0, this.canvasDomain[1]]);
 
-    // move canvas
-    this.group.attr('transform', `translate(${chartMargin.left},${chartMargin.top})`);
-
-    // draw x-axis, y-axis and paths
-    this.children.forEach(child => {
-      child.clearAll();
-
-      this.group.append( () => child.group.node());
-
-      child.buildGroup();
+    this.paths.forEach( p => {
+      xAxis.resetDomainWithPoint(p.xFirst, p.xLast);
+      yAxis.resetDomainWithPoint(p.yFirst, p.yLast);
     });
 
+    // draw x-axis, y-axis
+    [xAxis, yAxis].forEach( axis => this.rebuild(axis));
+
+    // draw paths
+    this.paths.forEach( path => this.rebuild(path));
+
     // Title position
-    if (this.options.hasTitle) {
+    if (this.canvasOptions.hasTitle) {
       const xTitle = chartMargin.left + (Rect.width(this.size) - titleRect.width) / 2;
       this.titleGroup.attr('transform', `translate(${xTitle},${titleRect.height})`);
     }
 
     // Legend position
-    if (this.options.hasLegend) {
+    if (this.canvasOptions.hasLegend) {
       this.legend.transform(this.size, this.fullSize, titleRect);
     }
-
   }
+
 
   private buildTitle() {
     // build title

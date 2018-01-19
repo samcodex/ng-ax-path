@@ -1,16 +1,30 @@
 import * as d3 from 'd3';
 import { SvgElement, Rect, SVG_ELEMENT_TYPE } from './svg-element';
-import { Path } from './path';
 import { d3_util } from './d3.util';
+import { Point } from './point';
 
 export interface AxisOptions {
   tickInterval?: number;
   extraSpace?: number;
+  disableAxisTitle?: boolean;
+  disableAxisLine?: boolean;
+  disableTickLine?: boolean;
+  disableTickMark?: boolean;
+  disableTickNumber?: boolean;
 }
 
 export class Axis extends SvgElement {
   private unit: string;
-  private options: AxisOptions = {tickInterval: 0, extraSpace: 0};
+  public defaultOptions: AxisOptions = {
+    tickInterval: 0,
+    extraSpace: 0,
+    disableAxisTitle: false,
+    disableAxisLine: false,
+    disableTickLine: false,
+    disableTickMark: false,
+    disableTickNumber: false
+  };
+  public options: AxisOptions = {};
 
   private tickValues: number[];
   private domain: [number, number] = [0, 0];
@@ -28,18 +42,33 @@ export class Axis extends SvgElement {
     super(type, name);
 
     this.unit = unit;
-    this.options = options;
+    Object.assign(this.options, options);
   }
 
   setRange(r: [number, number]) {
     this.range = r;
   }
 
-  setDataDomain(domain: [number, number]) {
-    this.domain = domain;
+  setDomain(domain: [number, number]) {
+    this.domain[0] = Math.min(this.domain[0], domain[0]);
+    this.domain[1] = Math.max(this.domain[1], domain[1]);
 
     this.validDomain();
     this.calculateTickValues();
+  }
+
+  resetDomainWithPoint(first: Point, last: Point) {
+    let min, max;
+    if (this.type === SVG_ELEMENT_TYPE.AXIS_X) {
+      min = first.x;
+      max = last.x + (this.options.extraSpace || 0);
+    } else {
+      min = first.y;
+      max = last.y + (this.options.extraSpace || 0);
+    }
+    max = Math.floor(max + 0.5);
+
+    this.setDomain([min, max]);
   }
 
   get title() {
@@ -54,6 +83,10 @@ export class Axis extends SvgElement {
 
   getScale(): d3.ScaleLinear<number, number> {
     return this.scale;
+  }
+
+  applyAxisOptions(options: AxisOptions) {
+    this.options = Object.assign({}, options, this.options);
   }
 
   private calculateTickValues() {
@@ -83,24 +116,6 @@ export class Axis extends SvgElement {
     }
   }
 
-  resetDomainWithPath(path: Path) {
-    const last = path.points.length - 1;
-    let min, max;
-    if (this.type === SVG_ELEMENT_TYPE.AXIS_X) {
-      min = path.points[0].x;
-      max = path.points[last].x + (this.options.extraSpace || 0);
-    } else {
-      min = path.points[0].y;
-      max = path.points[last].y + (this.options.extraSpace || 0);
-    }
-    max = Math.floor(max + 0.5);
-
-    this.domain[0] = Math.min(this.domain[0], min);
-    this.domain[1] = Math.max(this.domain[1], max);
-
-    this.calculateTickValues();
-  }
-
   private createAxisAndScale() {
     // scale
     this.scale = d3.scaleLinear()
@@ -118,10 +133,13 @@ export class Axis extends SvgElement {
     }
   }
 
-  private appendAxisText() {
+  private appendAxisTitle() {
     const parentSize = this.parent.size;
+    const className = `${this.type.substr(-1).toLocaleLowerCase()}-axis-title`;
+
     const text = this.group
         .append('text')
+        .attr('class', `axis-title ${className}`)
         .text(this.title);
 
     if (this.type === SVG_ELEMENT_TYPE.AXIS_X) {
@@ -140,9 +158,11 @@ export class Axis extends SvgElement {
     }
   }
 
-  private appendTickLine() {
+  private appendTickLine(noZeroTick: boolean = true, hasLastTick: boolean = true) {
     const parentSize = this.parent.size;
-    const lines = this.group.selectAll('.tick:not(:first-of-type)')
+    const tickClass = noZeroTick ? '.tick:not(:first-of-type)' : '.tick';
+
+    const lines = this.group.selectAll(tickClass)
       .append('line')
       .attr('stroke', '#777')
       .attr('stroke-dasharray', '2,2');
@@ -158,21 +178,54 @@ export class Axis extends SvgElement {
     this.createAxisAndScale();
 
     const parentSize = this.parent.size;
+    const className = `${this.type.substr(-1).toLocaleLowerCase()}-axis`;
+    let noZeroTick = true;
 
     this.group
-      .attr('class', 'axis axis--' + this.type)
+      .attr('class', `axis ${className}`)
       .call(this.axis);
 
     if (this.type === SVG_ELEMENT_TYPE.AXIS_X) {
       this.group.attr('transform', 'translate(0,' + parentSize.height + ')');
     }
 
-    this.appendAxisText();
+    if (!this.options.disableAxisTitle) {
+      this.appendAxisTitle();
+    }
 
-    this.appendTickLine();
+    if (this.options.disableAxisLine) {
+      this.disableAxisLine();
+      this.disableTickMark();
+
+      noZeroTick = false;
+    }
+
+    if (this.options.disableTickMark) {
+      this.disableTickMark();
+    }
+
+    if (!!this.options.disableTickNumber) {
+      this.disableTickNumber();
+    }
+
+    if (!this.options.disableTickLine) {
+      this.appendTickLine(noZeroTick);
+    }
   }
 
   getSize(): ClientRect {
     return d3_util.getRect(this.group);
+  }
+
+  private disableAxisLine() {
+    this.group.select('path').attr('stroke', 'none');
+  }
+
+  private disableTickMark() {
+    this.group.selectAll('.tick').select('line').attr('stroke', 'none');
+  }
+
+  private disableTickNumber() {
+    this.group.selectAll('.tick').select('text').attr('fill', 'none');
   }
 }

@@ -10,13 +10,20 @@ export enum PathType {
   STRAIGHT_LINE = 'StraightLine'
 }
 
+interface Ref {
+  first: Point;
+  last: Point;
+}
+
 export class Path extends SvgElement {
   parent: Canvas;
   axisStep = 1;
   public hasDot = true;
   public pathType: PathType = PathType.CURVED_LINE;
   public pointShape: PointShape = PointShape.CIRCLE;
-  public points: Point[];
+  private points: Point[];
+  private xRef: Ref = <Ref>{};
+  private yRef: Ref = <Ref>{};
 
   constructor(
     points: Point[],
@@ -26,11 +33,19 @@ export class Path extends SvgElement {
 
     this.points = points;
     this.setDefaultStyle();
+
     this.sort();
   }
 
   private sort() {
+    const points = this.points.slice();
     this.points.sort((a, b) => a.x - b.x);
+    points.sort((a, b) => a.y - b.y);
+
+    this.xRef.first = this.points[0];
+    this.xRef.last = this.points[this.points.length - 1];
+    this.yRef.first = points[0];
+    this.yRef.last = points[points.length - 1];
   }
 
   set color(color: string) {
@@ -39,6 +54,27 @@ export class Path extends SvgElement {
 
   get color(): string {
     return this.getStyle('stroke');
+  }
+
+  get xFirst(): Point {
+    return this.xRef.first;
+  }
+
+  get xLast(): Point {
+    return this.xRef.last;
+  }
+
+  get yFirst(): Point {
+    return this.yRef.first;
+  }
+
+  get yLast(): Point {
+    return this.yRef.last;
+  }
+
+  setPoints(points: Point[]) {
+    this.points = points;
+    this.sort();
   }
 
   private setDefaultStyle() {

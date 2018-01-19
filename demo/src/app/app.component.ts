@@ -1,9 +1,9 @@
-import { SVG_ELEMENT_TYPE } from './../../../src/models/svg-element';
 import { Component, OnInit } from '@angular/core';
-import { Canvas, Axis, Path, Point, LegendStyle, LegendShape, PathType, PointShape } from '../../../src';
 import { Http } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
+
+import { Canvas, Axis, Path, Point, LegendStyle, LegendShape, PathType, PointShape, CanvasStyle, SVG_ELEMENT_TYPE } from '../../../src';
 
 @Component({
   selector: 'app-root',
@@ -17,14 +17,18 @@ export class AppComponent implements OnInit {
   constructor(private http: Http) {}
 
   ngOnInit() {
-    const canvas = this.canvas = new Canvas('Demo', {width: 600, height: 400});
+    const canvas = this.canvas = new Canvas('Demo', {width: 600, height: 400}, CanvasStyle.Coordinate, [30, 130]);
     canvas.legendShape = LegendShape.CIRCLE;
     canvas.legend = LegendStyle.BOTTOM_CENTER_OUT_LINE;
-    canvas.hasLegend = false;
-    canvas.hasTitle = false;
+    // canvas.defaultMargin = {left:0, top: 0, right: 1, bottom: 1};
 
+    // xAxis.options.disableAxisLine = true;
     canvas.createX('Time', 'months', {tickInterval: 3, extraSpace: 3});
     canvas.yAxis = new Axis(SVG_ELEMENT_TYPE.AXIS_Y, 'Weight', 'kg', {extraSpace: 10});
+    const xAxis = canvas.getX();
+    xAxis.options.tickInterval = 3;
+
+    const yAxis = canvas.getY();
 
     // add path from Path instance
     const data = [[0,0],[3,10],[6,18],[9,16],[12,22],[13,26],[15,30],[18,40],[20,60],[22,62],[24,50]];

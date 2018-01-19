@@ -1,15 +1,15 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { NgCoordinateComponent } from './ng-coordinate.component';
+import { NgCanvasComponent } from './ng-canvas.component';
 
 @NgModule({
   imports: [CommonModule],
   declarations: [
-    NgCoordinateComponent
+    NgCanvasComponent
   ],
   exports: [
-    NgCoordinateComponent
+    NgCanvasComponent
   ]
 })
-export class NgCoordinateModule {}
+export class NgCanvasModule {}

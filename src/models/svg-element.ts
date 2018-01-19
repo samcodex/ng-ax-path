@@ -76,6 +76,12 @@ export abstract class SvgElement {
   clear() {
     this.group.selectAll('*').remove();
   }
+
+  rebuild(child: SvgElement) {
+    child.clearAll();
+    this.group.append( () => child.group.node());
+    child.buildGroup();
+  }
 }
 
 export type RectangleSize = {
