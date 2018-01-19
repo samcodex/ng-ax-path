@@ -37,7 +37,7 @@ export class YourModule {}
 
 ### Code Examples
 1. add ng-ax-path component into html template - app.component.html
-<ng-ax-path [coordinate]="coordinate"></ng-ax-path>
+<ng-ax-path [canvas]="canvas"></ng-ax-path>
 
 2. set ng-ax-path data in component class - app.component.ts
 ```ts
@@ -119,8 +119,10 @@ export class AppComponent implements OnInit {
 ```
 
 ## Canvas Style
+```
 CanvasStyle.Coordinate      // with canvas title, legend, axis line, tick line
 CanvasStyle.CanvasBoard     // with tick line, no title, legend and axis line
+```
 
 ## Legend Shape
 ```
